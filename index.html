@@ -212,9 +212,10 @@ function buildForm(){
   h += q("19","20.","Pratiche operative regolarmente adottate per controllare i consumi",checks("q19",Q19,"Nessuna di queste pratiche è attualmente in uso"),T_GMI);
   h += q("20","21.","Metodologie Lean applicate con obiettivo energetico",checks("q20",Q20,"Nessuna di queste metodologie è stata usata per scopi energetici"),T_GMI);
   const sel = n => `<select name="${n}"><option value="">—</option>${[1,2,3,4,5].map(v=>`<option>${v}</option>`).join("")}<option value="ns">Non so</option></select>`;
-  let m = `<div class="tblwrap"><table><thead><tr><th>Spreco energetico tipico</th><th class="c">Impatto</th><th class="c">Sforzo</th></tr></thead><tbody>`;
+  let m = `<p class="info" style="margin:0 0 8px">Per ogni spreco dai due voti da 1 a 5. <b>Impatto</b>: 1 = pesa poco sui costi, 5 = pesa molto. <b>Sforzo</b>: 1 = facile da risolvere, 5 = molto difficile. Se non hai elementi per valutare una voce, scegli “Non so”.</p>`;
+  m += `<div class="tblwrap"><table><thead><tr><th>Spreco energetico tipico</th><th class="c">Impatto<br><span style="font-weight:400">(Quanto pesa sui costi?)<br>scala da 1 a 5</span></th><th class="c">Sforzo<br><span style="font-weight:400">(Quanto è difficile da risolvere?)<br>scala da 1 a 5</span></th></tr></thead><tbody>`;
   WASTES.forEach((w,i)=> m += `<tr><td>${esc(w)}</td><td class="c">${sel("q21i_"+i)}</td><td class="c">${sel("q21s_"+i)}</td></tr>`);
-  m += `</tbody></table></div><p class="info">Scala 1 = basso/facile … 5 = alto/molto difficile.</p>`;
+  m += `</tbody></table></div><p class="info">Alto impatto + basso sforzo = da fare per primi. I risultati compaiono nel riquadro “Sprechi per priorità”.</p>`;
   h += q("21","22.","Matrice Sforzo/Impatto degli sprechi energetici",m,T_DESC);
   h += q("23","24.","Variazione del consumo specifico negli ultimi 3 anni",radio("q23",["Ridotto del 10% o più","Ridotto tra il 5% e il 10% escluso","Ridotto di meno del 5%","Sostanzialmente invariato","Aumentato","Non misurato / Non so"]),T_DESC);
   h += `</section>`;
