@@ -102,7 +102,7 @@ footer{max-width:1280px;margin:0 auto;padding:4px 16px 28px;color:var(--muted);f
 <header class="top"><div class="wrap">
   <div>
     <h1>Simulatore LMI–GMI</h1>
-    <p class="sub">Questionario e Modello di Valutazione Lean &amp; Green · regole di punteggio della <b>rev8</b> · bozza per uso interno UNIFI–ENEA</p>
+    <p class="sub">Questionario e Modello di Valutazione Lean &amp; Green · regole di punteggio della <b>rev9</b> · bozza per uso interno UNIFI–ENEA</p>
   </div>
   <div class="presets">
     <span>Esempi:</span>
@@ -119,13 +119,13 @@ footer{max-width:1280px;margin:0 auto;padding:4px 16px 28px;color:var(--muted);f
   <aside class="results" id="results" aria-live="polite"></aside>
 </main>
 <footer>
-  Il simulatore applica le regole della Parte 2 del documento (rev8). Le regole marcate <span class="badge prop">proposta</span> non sono ancora nel documento.
+  Il simulatore applica le regole della Parte 2 del documento (rev9).
   Nessun dato viene inviato: tutto il calcolo avviene nel browser.
 </footer>
 
 <script>
 "use strict";
-/* ============ Definizione del questionario (rev8) ============ */
+/* ============ Definizione del questionario (rev9) ============ */
 const BLOCKS = [
   {id:"A", t:"A. Organizzazione del posto di lavoro e Gestione Visiva", items:["5S (Seiri, Seiton, Seiso, Seiketsu, Shitsuke)","Visual Management (Tabelloni, segnali a terra, Andon)","Obeya Room / Visual Control Board per indicatori di performance","Poka-Yoke (Sistemi anti-errore)"]},
   {id:"B", t:"B. Manutenzione e Qualità", items:["TPM (Total Productive Maintenance)","Manutenzione Autonoma (da parte degli operatori)","OEE (Overall Equipment Effectiveness)","Jidoka / Autonomation","Root Cause Analysis / 5 Whys","SPC – Controllo statistico di processo (carte di controllo)"]},
@@ -182,8 +182,8 @@ function buildForm(){
   h += q("11","11.","Incidenza della spesa energetica sul fatturato",radio("q11",["Inferiore all’1%","Dall’1% al 3% escluso","Dal 3% al 5% escluso","Dal 5% al 10% escluso","Pari o superiore al 10%","Non so / Dato non disponibile"]));
   h += `<p class="info">Le domande 2, 3, 4 e 9 (ATECO, descrizione, ruolo, fatturato) sono omesse: non influiscono sui calcoli.</p></section>`;
 
-  h += `<section class="card"><h2>Sezione II · Comportamenti organizzativi e strumenti Lean</h2><p class="sec-note">Le domande 13, 13B, 14, 15 e 16 formano il Lean Maturity Index.</p>`;
-  h += q("12","12.","L’azienda conosce e applica la filosofia Lean?",radio("q12",Q12,`<span class="skipnote">“No” → si salta alle domande 13 e 13B (1 pt ciascuna)</span>`),T_DESC);
+  h += `<section class="card"><h2>Sezione II · Comportamenti organizzativi e strumenti Lean</h2><p class="sec-note">Le domande 13, 14, 15, 16 e 17 formano il Lean Maturity Index.</p>`;
+  h += q("12","12.","L’azienda conosce e applica la filosofia Lean?",radio("q12",Q12,`<span class="skipnote">“No” → si saltano le domande 13 e 14 (1 pt ciascuna)</span>`),T_DESC);
   let b = "";
   BLOCKS.forEach(bl=>{
     b += `<div class="block"><div class="bt">${esc(bl.t)}</div><div class="opts">`;
@@ -192,10 +192,10 @@ function buildForm(){
     b += `<label class="o excl"><input type="checkbox" name="q13${bl.id}" value="none" data-excl="1"><span>Nessuna delle precedenti / Non conosco queste metodologie</span></label></div></div>`;
   });
   h += q("13","13.","Tecniche e strumenti Lean utilizzati <span class=\"info\">(risposta multipla per blocco)</span>",b,T_LMI,"dep-lean");
-  h += q("13b","13B.","Livello di diffusione delle metodologie Lean",radio("q13b",Q13B),T_LMI,"dep-lean dep-tools");
-  h += q("14","14.","Gestione delle anomalie",radio("q14",Q14),T_LMI);
-  h += q("15","15.","Coinvolgimento e miglioramento: gestione delle proposte del personale operativo",radio("q15",Q15),T_LMI);
-  h += q("16","16.","Gestione visiva delle performance",radio("q16",Q16),T_LMI);
+  h += q("13b","14.","Livello di diffusione delle metodologie Lean",radio("q13b",Q13B),T_LMI,"dep-lean dep-tools");
+  h += q("14","15.","Gestione delle anomalie",radio("q14",Q14),T_LMI);
+  h += q("15","16.","Coinvolgimento e miglioramento: gestione delle proposte del personale operativo",radio("q15",Q15),T_LMI);
+  h += q("16","17.","Gestione visiva delle performance",radio("q16",Q16),T_LMI);
   h += `</section>`;
 
   h += `<section class="card"><h2>Sezione III · Vettori energetici e misurazione</h2><p class="sec-note">Nel GMI entrano solo Energia Elettrica e Gas Naturale; gli altri vettori sono descrittivi.</p>`;
@@ -203,20 +203,20 @@ function buildForm(){
   VECTORS.forEach((v,i)=>{
     t += `<tr><td>${esc(v)}${i<2?' <span class="tag gmi">GMI</span>':''}</td>${LEVELS.map(l=>`<td class="c"><input type="radio" name="q17_${i}" value="${l[0]}" aria-label="${esc(v)}: ${esc(l[1])}"></td>`).join("")}</tr>`;
   });
-  t += `</tbody></table></div><p class="info">La colonna “Non so” è prevista dalla rev8 (nota per ENEA): vale 1 pt.</p>`;
-  h += q("17","17.","Vettori energetici utilizzati e livello di tracciamento",t,T_GMI);
+  t += `</tbody></table></div><p class="info">La colonna “Non so” è prevista dalla rev9 (nota per ENEA): vale 1 pt.</p>`;
+  h += q("17","18.","Vettori energetici utilizzati e livello di tracciamento",t,T_GMI);
   h += `</section>`;
 
-  h += `<section class="card"><h2>Sezione IV · Pratiche integrate Lean &amp; Green</h2><p class="sec-note">Le domande 19 e 20 entrano nel Green Maturity Index; 18, 21 e 23 sono descrittive.</p>`;
-  h += q("18","18.","Aree con azioni di efficienza energetica in corso",checks("q18",["Processi produttivi / linee principali","Servizi ausiliari (compressori, caldaie, chiller…)","Logistica interna / movimentazione","Illuminazione generale / uffici","Climatizzazione ambienti (HVAC)"],"Nessuna area attualmente oggetto di interventi"),T_DESC);
-  h += q("19","19.","Pratiche operative regolarmente adottate per controllare i consumi",checks("q19",Q19,"Nessuna di queste pratiche è attualmente in uso"),T_GMI);
-  h += q("20","20.","Metodologie Lean applicate con obiettivo energetico",checks("q20",Q20,"Nessuna di queste metodologie è stata usata per scopi energetici"),T_GMI);
+  h += `<section class="card"><h2>Sezione IV · Pratiche integrate Lean &amp; Green</h2><p class="sec-note">Le domande 20 e 21 entrano nel Green Maturity Index; 19, 22 e 24 sono descrittive.</p>`;
+  h += q("18","19.","Aree con azioni di efficienza energetica in corso",checks("q18",["Processi produttivi / linee principali","Servizi ausiliari (compressori, caldaie, chiller…)","Logistica interna / movimentazione","Illuminazione generale / uffici","Climatizzazione ambienti (HVAC)"],"Nessuna area attualmente oggetto di interventi"),T_DESC);
+  h += q("19","20.","Pratiche operative regolarmente adottate per controllare i consumi",checks("q19",Q19,"Nessuna di queste pratiche è attualmente in uso"),T_GMI);
+  h += q("20","21.","Metodologie Lean applicate con obiettivo energetico",checks("q20",Q20,"Nessuna di queste metodologie è stata usata per scopi energetici"),T_GMI);
   const sel = n => `<select name="${n}"><option value="">—</option>${[1,2,3,4,5].map(v=>`<option>${v}</option>`).join("")}<option value="ns">Non so</option></select>`;
   let m = `<div class="tblwrap"><table><thead><tr><th>Spreco energetico tipico</th><th class="c">Impatto</th><th class="c">Sforzo</th></tr></thead><tbody>`;
   WASTES.forEach((w,i)=> m += `<tr><td>${esc(w)}</td><td class="c">${sel("q21i_"+i)}</td><td class="c">${sel("q21s_"+i)}</td></tr>`);
   m += `</tbody></table></div><p class="info">Scala 1 = basso/facile … 5 = alto/molto difficile.</p>`;
-  h += q("21","21.","Matrice Sforzo/Impatto degli sprechi energetici",m,T_DESC);
-  h += q("23","23.","Variazione del consumo specifico negli ultimi 3 anni",radio("q23",["Ridotto del 10% o più","Ridotto tra il 5% e il 10% escluso","Ridotto di meno del 5%","Sostanzialmente invariato","Aumentato","Non misurato / Non so"]),T_DESC);
+  h += q("21","22.","Matrice Sforzo/Impatto degli sprechi energetici",m,T_DESC);
+  h += q("23","24.","Variazione del consumo specifico negli ultimi 3 anni",radio("q23",["Ridotto del 10% o più","Ridotto tra il 5% e il 10% escluso","Ridotto di meno del 5%","Sostanzialmente invariato","Aumentato","Non misurato / Non so"]),T_DESC);
   h += `</section>`;
   document.getElementById("form").innerHTML = h;
 }
@@ -251,7 +251,7 @@ function compute(){
   const v13b = val("q13b");
   r.skip13b = r.leanNo || (r.q13answered && r.nTools===0);
   if (r.leanNo){ r.s13b = 1; r.s13bwhy = "D12 = “No” → 1 pt d’ufficio"; r.prop13b=false; }
-  else if (r.q13answered && r.nTools===0){ r.s13b = 1; r.s13bwhy = "nessuno strumento alla D13 → domanda saltata, 1 pt"; r.prop13b=true; }
+  else if (r.q13answered && r.nTools===0){ r.s13b = 1; r.s13bwhy = "nessuno strumento alla D13 → D14 saltata, 1 pt"; r.prop13b=false; }
   else if (v13b!==null){ r.s13b = Q13B[+v13b][1]; r.s13bwhy = "livello di diffusione scelto"; }
   else { r.s13b = null; r.s13bwhy = "non risposta"; }
   const c13 = [r.s13, r.s13b].filter(x=>x!=null);
@@ -259,7 +259,7 @@ function compute(){
   // --- D14-16
   const pick = (name, tab) => { const v = val(name); return v===null ? null : tab[+v][1]; };
   r.s14 = pick("q14",Q14); r.s15 = pick("q15",Q15); r.s16 = pick("q16",Q16);
-  r.lmiParts = [["D13 (media 13 e 13B)", r.c13],["D14 Gestione anomalie", r.s14],["D15 Proposte di miglioramento", r.s15],["D16 Gestione visiva", r.s16]];
+  r.lmiParts = [["D13 (media 13 e 14)", r.c13],["D15 Gestione anomalie", r.s14],["D16 Proposte di miglioramento", r.s15],["D17 Gestione visiva", r.s16]];
   const lv = r.lmiParts.map(p=>p[1]).filter(x=>x!=null);
   r.lmiN = lv.length; r.LMI = lv.length>=3 ? mean(lv) : null;
   // --- D17
@@ -275,7 +275,7 @@ function compute(){
   const cnt = name => { const v = vals(name); if(!v.length) return null; return v.includes("none") ? 0 : v.length; };
   r.n19 = cnt("q19"); r.s19 = r.n19==null ? null : [1,2,3,4,5][r.n19];
   r.n20 = cnt("q20"); r.s20 = r.n20==null ? null : (r.n20===0?1 : r.n20<=2?3 : 5);
-  r.gmiParts = [["D17 Tracciamento (media EE e gas)", r.s17],["D19 Pratiche operative", r.s19],["D20 Pratiche Lean per l’energia", r.s20]];
+  r.gmiParts = [["D18 Tracciamento (media EE e gas)", r.s17],["D20 Pratiche operative", r.s19],["D21 Pratiche Lean per l’energia", r.s20]];
   const gv = r.gmiParts.map(p=>p[1]).filter(x=>x!=null);
   r.gmiN = gv.length; r.GMI = gv.length>=2 ? mean(gv) : null;
   // --- Profilo
@@ -316,11 +316,11 @@ function render(r){
   h += `<table class="calc"><tbody>`;
   const tb = r.blocks.map(b=>`${b.id}:${b.n}`).join(" · ");
   h += rowPt("D13 Strumenti", r.s13, r.leanNo ? r.s13why : (r.q13answered ? `${tb}<br>${r.s13why}` : r.s13why));
-  h += rowPt("D13B Diffusione", r.s13b, r.s13bwhy, r.prop13b?' <span class="badge prop">proposta</span>':"");
+  h += rowPt("D14 Diffusione", r.s13b, r.s13bwhy, r.prop13b?' <span class="badge prop">proposta</span>':"");
   h += rowPt("→ D13 combinata", r.c13, r.c13==null?"":`media(${[r.s13,r.s13b].filter(x=>x!=null).map(fmt1).join(", ")})`);
-  h += rowPt("D14 Gestione anomalie", r.s14, "");
-  h += rowPt("D15 Proposte di miglioramento", r.s15, "");
-  h += rowPt("D16 Gestione visiva", r.s16, "");
+  h += rowPt("D15 Gestione anomalie", r.s14, "");
+  h += rowPt("D16 Proposte di miglioramento", r.s15, "");
+  h += rowPt("D17 Gestione visiva", r.s16, "");
   h += `</tbody></table>`;
   const lv = r.lmiParts.filter(p=>p[1]!=null);
   h += `<div class="formula">LMI = media(${lv.map(p=>fmt1(p[1])).join(", ")||"–"}) ${r.LMI!=null?"= "+fmt(r.LMI):""}<br>risposte valide: ${r.lmiN}/4 (minimo 3)${r.LMI==null?" → indice non calcolabile":""}</div></div>`;
@@ -328,10 +328,10 @@ function render(r){
   // ---- GMI
   h += `<div class="rcard"><h3><span>Green Maturity Index</span><span class="big gmi-c ${r.GMI==null?'na':''}">${r.GMI==null?"non calcolabile":fmt(r.GMI)}</span></h3>`;
   h += `<table class="calc"><tbody>`;
-  r.vec.forEach(v=> h += rowPt("D17 · "+v.name, v.pt, v.v==="nu" ? "non utilizzato" : v.label, "", v.v==="nu" ? "escluso" : "mancante"));
-  h += rowPt("→ D17 tracciamento", r.s17, r.s17==null ? "nessun vettore chiave valutabile" : `media(${r.vec.filter(v=>v.pt!=null).map(v=>fmt1(v.pt)).join(", ")})`);
-  h += rowPt("D19 Pratiche operative", r.s19, r.n19==null?"":`${r.n19} ${r.n19===1?"pratica":"pratiche"} su 4`);
-  h += rowPt("D20 Pratiche Lean per l’energia", r.s20, r.n20==null?"":`${r.n20} metodologie (0 → 1 · 1–2 → 3 · 3+ → 5)`);
+  r.vec.forEach(v=> h += rowPt("D18 · "+v.name, v.pt, v.v==="nu" ? "non utilizzato" : v.label, "", v.v==="nu" ? "escluso" : "mancante"));
+  h += rowPt("→ D18 tracciamento", r.s17, r.s17==null ? "nessun vettore chiave valutabile" : `media(${r.vec.filter(v=>v.pt!=null).map(v=>fmt1(v.pt)).join(", ")})`);
+  h += rowPt("D20 Pratiche operative", r.s19, r.n19==null?"":`${r.n19} ${r.n19===1?"pratica":"pratiche"} su 4`);
+  h += rowPt("D21 Pratiche Lean per l’energia", r.s20, r.n20==null?"":`${r.n20} metodologie (0 → 1 · 1–2 → 3 · 3+ → 5)`);
   h += `</tbody></table>`;
   const gv = r.gmiParts.filter(p=>p[1]!=null);
   h += `<div class="formula">GMI = media(${gv.map(p=>fmt1(p[1])).join(", ")||"–"}) ${r.GMI!=null?"= "+fmt(r.GMI):""}<br>risposte valide: ${r.gmiN}/3 (minimo 2)${r.GMI==null?" → indice non calcolabile":""}</div>`;
@@ -357,9 +357,9 @@ function render(r){
     const rows = r.wastes.map(x=>({...x, I:num(x.i), S:num(x.s)}))
       .sort((a,b)=>((b.I??-1)-(a.I??-1)) || ((a.S??9)-(b.S??9)));
     const cls = x => x.I==null||x.S==null ? "–" : x.I>=4&&x.S<=2 ? "Quick win" : x.I>=4 ? "Progetto strategico" : x.S<=2 ? "Intervento minore" : "Bassa priorità";
-    h += `<div class="rcard"><h3><span>D21 · Sprechi per priorità</span><span class="tag desc">descrittiva</span></h3><table class="calc"><thead><tr><th>Spreco</th><th>I</th><th>S</th><th>Lettura</th></tr></thead><tbody>`;
+    h += `<div class="rcard"><h3><span>D22 · Sprechi per priorità</span><span class="tag desc">descrittiva</span></h3><table class="calc"><thead><tr><th>Spreco</th><th>I</th><th>S</th><th>Lettura</th></tr></thead><tbody>`;
     rows.forEach(x=> h += `<tr><td>${esc(x.w)}</td><td>${x.i==="ns"?"NS":x.i||"–"}</td><td>${x.s==="ns"?"NS":x.s||"–"}</td><td class="why">${cls(x)}</td></tr>`);
-    h += `</tbody></table><p class="legend-note">Ordinati per impatto decrescente e sforzo crescente. La lettura (quick win = impatto ≥ 4 e sforzo ≤ 2) è solo indicativa: la D21 non entra negli indici.</p></div>`;
+    h += `</tbody></table><p class="legend-note">Ordinati per impatto decrescente e sforzo crescente. La lettura (quick win = impatto ≥ 4 e sforzo ≤ 2) è solo indicativa: la D22 non entra negli indici.</p></div>`;
   }
   document.getElementById("results").innerHTML = h;
 }
