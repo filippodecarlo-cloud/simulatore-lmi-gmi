@@ -1,0 +1,424 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Simulatore LMI–GMI</title>
+<meta name="description" content="Simulatore del modello di scoring del questionario Lean &amp; Green (UNIFI–ENEA): inserimento delle risposte di un'azienda e calcolo passo-passo di LMI, GMI e profilo.">
+<style>
+:root{
+  --bg:#f6f7f9; --panel:#ffffff; --ink:#1b1f24; --muted:#5d6672; --line:#dde1e6;
+  --accent:#1f6f5c; --accent-soft:#e3f1ec; --lean:#2f5fa7; --lean-soft:#e6eefa;
+  --green:#2e7d4f; --green-soft:#e4f3ea; --warn:#a15c00; --warn-soft:#fdf1de;
+  --bad:#a33a3a; --bad-soft:#fbe9e9; --chip:#eef0f3; --shadow:0 1px 2px rgba(0,0,0,.05),0 2px 8px rgba(0,0,0,.04);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#121417; --panel:#1b1e22; --ink:#e8eaed; --muted:#9aa3ad; --line:#2d3238;
+    --accent:#5cc2a3; --accent-soft:#163029; --lean:#7fa8eb; --lean-soft:#18233a;
+    --green:#6fcf97; --green-soft:#16291e; --warn:#f0b35a; --warn-soft:#33260f;
+    --bad:#ef8a8a; --bad-soft:#3a1c1c; --chip:#262a30; --shadow:none;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#121417; --panel:#1b1e22; --ink:#e8eaed; --muted:#9aa3ad; --line:#2d3238;
+  --accent:#5cc2a3; --accent-soft:#163029; --lean:#7fa8eb; --lean-soft:#18233a;
+  --green:#6fcf97; --green-soft:#16291e; --warn:#f0b35a; --warn-soft:#33260f;
+  --bad:#ef8a8a; --bad-soft:#3a1c1c; --chip:#262a30; --shadow:none;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+header.top{background:var(--panel);border-bottom:1px solid var(--line);padding:18px 16px}
+header.top .wrap{max-width:1280px;margin:0 auto;display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;justify-content:space-between}
+h1{font-size:22px;margin:0 0 2px}
+.sub{color:var(--muted);font-size:13.5px;margin:0}
+.presets{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.presets span{font-size:13px;color:var(--muted);margin-right:2px}
+button{font:inherit;font-size:13.5px;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:8px;padding:6px 11px;cursor:pointer}
+button:hover{border-color:var(--accent)}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+:root[data-theme="dark"] button.primary{color:#0c1a15}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) button.primary{color:#0c1a15}}
+main{max-width:1280px;margin:0 auto;padding:16px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,460px);gap:18px;align-items:start}
+@media (max-width:960px){main{grid-template-columns:minmax(0,1fr)}}
+.results{position:sticky;top:12px;max-height:calc(100vh - 24px);overflow:auto}
+@media (max-width:960px){.results{position:static;max-height:none}}
+section.card,.rcard{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:14px;box-shadow:var(--shadow)}
+h2{font-size:16px;margin:0 0 4px}
+.sec-note{color:var(--muted);font-size:13px;margin:0 0 10px}
+.q{border-top:1px solid var(--line);padding:12px 0 6px}
+.q:first-of-type{border-top:0}
+.q.hidden{display:none}
+.qt{font-weight:600;margin-bottom:6px}
+.qt .num{display:inline-block;min-width:34px;color:var(--accent)}
+.tag{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.02em;padding:1px 7px;border-radius:999px;margin-left:6px;vertical-align:1px}
+.tag.lmi{background:var(--lean-soft);color:var(--lean)}
+.tag.gmi{background:var(--green-soft);color:var(--green)}
+.tag.desc{background:var(--chip);color:var(--muted)}
+.opts{display:flex;flex-direction:column;gap:3px}
+label.o{display:flex;gap:8px;align-items:flex-start;padding:3px 6px;border-radius:6px;cursor:pointer}
+label.o:hover{background:var(--chip)}
+label.o input{margin-top:4px;flex:none}
+label.o.excl{color:var(--muted);font-style:italic}
+.skipnote{font-size:12.5px;color:var(--warn);margin-left:4px}
+input[type=text],textarea,select{font:inherit;font-size:14px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:5px 8px;max-width:100%}
+textarea{width:100%;min-height:54px}
+input.wide{width:100%}
+.block{margin:6px 0 8px;padding:8px 10px;background:var(--bg);border-radius:8px}
+.block .bt{font-weight:600;font-size:14px;margin-bottom:2px}
+.tblwrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{border-bottom:1px solid var(--line);padding:5px 6px;text-align:left;vertical-align:middle}
+th{font-weight:600;color:var(--muted);font-size:12.5px}
+table.grid td.c,table.grid th.c{text-align:center}
+.info{font-size:12.5px;color:var(--muted);margin:4px 0 0}
+.rcard h3{margin:0 0 8px;font-size:15px;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.big{font-size:26px;font-weight:700;font-variant-numeric:tabular-nums}
+.big.na{font-size:16px;color:var(--muted);font-weight:600}
+.lmi-c{color:var(--lean)} .gmi-c{color:var(--green)}
+table.calc td{font-variant-numeric:tabular-nums}
+table.calc td.pt{text-align:right;white-space:nowrap;font-weight:600}
+table.calc td.why{color:var(--muted);font-size:12.5px}
+table.calc tr.sum td{border-top:2px solid var(--line);border-bottom:0;font-weight:700}
+.miss{color:var(--muted);font-style:italic;font-weight:400}
+.formula{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12.5px;background:var(--bg);border-radius:6px;padding:6px 8px;margin-top:8px;word-break:break-word}
+.badge{display:inline-block;font-size:11.5px;font-weight:600;padding:2px 8px;border-radius:999px}
+.badge.prop{background:var(--warn-soft);color:var(--warn)}
+.profile{border-left:4px solid var(--accent);padding:4px 0 4px 12px;margin-top:6px}
+.profile .pname{font-weight:700;font-size:16px}
+.flag{margin-top:10px;padding:8px 10px;border-radius:8px;background:var(--warn-soft);color:var(--warn);font-weight:600;font-size:13.5px}
+.okflag{margin-top:10px;padding:8px 10px;border-radius:8px;background:var(--accent-soft);color:var(--accent);font-size:13.5px}
+.bar{position:relative;height:10px;border-radius:5px;background:linear-gradient(90deg,var(--bad-soft) 0 25%,var(--warn-soft) 25% 62.5%,var(--accent-soft) 62.5% 100%);margin:16px 0 22px}
+.bar .mk{position:absolute;top:-5px;width:4px;height:20px;border-radius:2px;transform:translateX(-2px)}
+.bar .mk span{position:absolute;top:21px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:700;white-space:nowrap}
+.bar .tick{position:absolute;top:12px;font-size:10.5px;color:var(--muted);transform:translateX(-50%)}
+.legend-note{font-size:12px;color:var(--muted)}
+footer{max-width:1280px;margin:0 auto;padding:4px 16px 28px;color:var(--muted);font-size:12.5px}
+@media print{header.top .presets,footer{display:none} main{display:block} .results{position:static;max-height:none}}
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <div>
+    <h1>Simulatore LMI–GMI</h1>
+    <p class="sub">Questionario e Modello di Valutazione Lean &amp; Green · regole di punteggio della <b>rev8</b> · bozza per uso interno UNIFI–ENEA</p>
+  </div>
+  <div class="presets">
+    <span>Esempi:</span>
+    <button data-preset="matura">Manifatturiera matura</button>
+    <button data-preset="squilibrio">Lean senza energia</button>
+    <button data-preset="servizi">Servizi, Lean non nota</button>
+    <button data-preset="incompleta">Risposte incomplete</button>
+    <button id="reset" class="primary">Azzera</button>
+  </div>
+</div></header>
+
+<main>
+  <form id="form" autocomplete="off"></form>
+  <aside class="results" id="results" aria-live="polite"></aside>
+</main>
+<footer>
+  Il simulatore applica le regole della Parte 2 del documento (rev8). Le regole marcate <span class="badge prop">proposta</span> non sono ancora nel documento.
+  Nessun dato viene inviato: tutto il calcolo avviene nel browser.
+</footer>
+
+<script>
+"use strict";
+/* ============ Definizione del questionario (rev8) ============ */
+const BLOCKS = [
+  {id:"A", t:"A. Organizzazione del posto di lavoro e Gestione Visiva", items:["5S (Seiri, Seiton, Seiso, Seiketsu, Shitsuke)","Visual Management (Tabelloni, segnali a terra, Andon)","Obeya Room / Visual Control Board per indicatori di performance","Poka-Yoke (Sistemi anti-errore)"]},
+  {id:"B", t:"B. Manutenzione e Qualità", items:["TPM (Total Productive Maintenance)","Manutenzione Autonoma (da parte degli operatori)","OEE (Overall Equipment Effectiveness)","Jidoka / Autonomation","Root Cause Analysis / 5 Whys","SPC – Controllo statistico di processo (carte di controllo)"]},
+  {id:"C", t:"C. Mappatura e Flusso del Valore", items:["VSM (Value Stream Mapping)","Spaghetti Chart (Analisi dei percorsi fisici)","Time & Motion Study (Analisi tempi e metodi)","Standard Work (Lavoro Standardizzato documentato)"]},
+  {id:"D", t:"D. Gestione dei Materiali e della Produzione", items:["Kanban (Sistema di ripristino pull)","Just in Time (JIT)","Heijunka (Livellamento della produzione)","SMED (Riduzione tempi di set-up)","Celle di produzione (Layout a U, flusso continuo)","Milk Run (Logistica interna ottimizzata)"]},
+  {id:"E", t:"E. Cultura e Miglioramento Continuo", items:["Kaizen (Eventi o progetti di miglioramento continuo)","Sistema strutturato di raccolta suggerimenti dai dipendenti","Gemba Walk (Sopralluoghi regolari del management)","Hoshin Kanri (Allineamento strategico degli obiettivi)"]}
+];
+const VECTORS = ["Energia Elettrica","Gas Naturale (Metano)","GPL","Biomasse (es. pellet, cippato)","Gasolio / Combustibili liquidi","Vapore (prodotto o acquistato)","Aria Compressa","Acqua (per uso industriale)","Gas Tecnici (es. Azoto, Ossigeno)","Altro"];
+const LEVELS = [["nu","Non utilizzato"],["L0","L0 (Stima)"],["L1","L1 (Bolletta)"],["L2","L2 (Sotto-contatori)"],["L3","L3 (Telemetria)"],["ns","Non so"]];
+const LEVEL_PT = {L0:1, L1:2, L2:4, L3:5, ns:1};
+const WASTES = ["Macchine in funzione a vuoto (stand-by prolungati)","Perdite nelle reti (es. aria compressa, vapore)","Inefficienze termiche (scarso isolamento, calore disperso)","Sovra-illuminazione o illuminazione accesa quando non serve","Motori/Pompe/Ventilatori non efficienti (es. assenza di inverter)","Scarti di produzione (energia sprecata per produrli)","Set-up macchina lunghi (energia consumata durante le regolazioni)","Sovrapproduzione e scorte eccessive","Movimentazioni e trasporti interni non necessari"];
+
+const Q12 = ["Sì, la applichiamo in modo strutturato da meno di 2 anni","Sì, la applichiamo in modo strutturato da 2 a 5 anni","Sì, la applichiamo in modo strutturato da più di 5 anni","La conosciamo, ma non la applichiamo in modo strutturato","No, non la conosciamo"];
+const Q13B = [["Le metodologie sono conosciute, ma non ancora applicate operativamente.",1],["Le metodologie sono applicate occasionalmente, attraverso iniziative o progetti pilota.",2],["Le metodologie sono applicate regolarmente, ma soltanto in alcuni reparti o processi.",3],["Le metodologie sono applicate sistematicamente nella maggior parte dei processi pertinenti.",4],["Le metodologie sono integrate nella gestione aziendale, con monitoraggio dei risultati e miglioramento continuo.",5]];
+const Q14 = [["Reazione immediata per ripristinare la situazione, senza effettuare analisi strutturate successive.",1],["Ripristino della situazione e, se necessario, successiva indagine informale sulle cause.",3],["L’attività non viene interrotta ricorrendo a risorse di riserva (macchinari, impianti o personale di backup), demandando la correzione dell’anomalia e l’investigazione delle cause ad un secondo momento.",2],["Si ripristina la situazione e si effettua sistematicamente un’analisi documentata delle cause, individuando azioni correttive.",4],["Il processo viene bloccato (se possibile), si analizza immediatamente la causa radice (es. con 5 Perché) coinvolgendo gli operatori, e si implementa una soluzione definitiva.",5]];
+const Q15 = [["Non esiste un sistema strutturato di raccolta delle proposte.",1],["Le proposte vengono raccolte occasionalmente e gestite in modo informale.",2],["Esiste una modalità definita di raccolta e valutazione delle proposte, applicata in alcune aree.",3],["Esiste un sistema strutturato, diffuso nei principali reparti o processi, con monitoraggio delle proposte e delle azioni realizzate.",4],["Il sistema è integrato nella gestione ordinaria e comprende feedback al personale, monitoraggio dei risultati e verifica dei miglioramenti.",5]];
+const Q16 = [["No, i dati sono accessibili solo ai responsabili sui PC o a fine mese.",1],["In parte, ci sono alcuni indicatori, ma non coprono le performance chiave giornaliere.",3],["Sì, le performance chiave (es. OEE, scarti, fermi) sono aggiornate regolarmente (es. per turno) e visibili a tutti.",5]];
+const Q19 = ["Procedure standardizzate di accensione/spegnimento delle macchine principali (evitare consumi a vuoto)","Checklist di manutenzione con controlli specifici per inefficienze energetiche","Consumi e anomalie discussi regolarmente nei meeting operativi di reparto","Formazione/sensibilizzazione del personale operativo sull’uso efficiente dell’energia"];
+const Q20 = ["5S per l’Energia","Energy Value Stream Mapping","TPM / Manutenzione Autonoma orientata all’energia","Kaizen Event / Blitz sugli sprechi energetici","Standard Work per ottimizzare i consumi"];
+
+const PROFILES = [
+  {max:2.0, name:"Fascia Bassa: Azienda Reattiva / Green Beginner", range:"da 1,0 a 2,0",
+   desc:"Manca una struttura organizzativa e manca visibilità sui consumi. Il miglioramento energetico deve partire da un impegno esplicito della direzione.",
+   act:"Partire dalla mappatura dei consumi complessivi dello stabilimento (bollette) e dagli interventi strutturali. Introdurre subito interventi rapidi e a costo quasi nullo, come regole chiare di spegnimento delle macchine."},
+  {max:3.5, name:"Fascia Media: Azienda In Transizione / Green Adopter", range:"oltre 2,0 fino a 3,5",
+   desc:"L'azienda inizia a misurare e padroneggia alcuni strumenti Lean isolati.",
+   act:"Mappare i consumi per reparto. Sfruttare i “veicoli Lean” già conosciuti per innestare pratiche energetiche (es. standard work per macchine energivore, controlli sulle checklist di manutenzione)."},
+  {max:5.0, name:"Fascia Alta: Azienda Proattiva / Green Leader", range:"oltre 3,5 fino a 5,0",
+   desc:"Misurazione puntuale, dati telematici e cultura del miglioramento continuo radicata.",
+   act:"Mappare i consumi per singola macchina o linea. Integrare i KPI energetici in strumenti avanzati come l'OEE (esteso ai consumi energetici) e sviluppare una Energy Value Stream Mapping completa."}
+];
+
+/* ============ Costruzione del form ============ */
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const radio = (name, opts, extra="") => `<div class="opts">${opts.map((o,i)=>{
+  const t = Array.isArray(o) ? o[0] : o;
+  return `<label class="o"><input type="radio" name="${name}" value="${i}"><span>${esc(t)}</span></label>`;}).join("")}${extra}</div>`;
+const checks = (name, opts, exclLabel) => `<div class="opts">${opts.map((t,i)=>
+  `<label class="o"><input type="checkbox" name="${name}" value="${i}"><span>${esc(t)}</span></label>`).join("")}
+  ${exclLabel ? `<label class="o excl"><input type="checkbox" name="${name}" value="none" data-excl="1"><span>${esc(exclLabel)}</span></label>` : ""}</div>`;
+const q = (id, num, title, body, tag="", cls="") =>
+  `<div class="q ${cls}" id="q${id}"><div class="qt"><span class="num">${num}</span>${title}${tag}</div>${body}</div>`;
+const T_LMI = '<span class="tag lmi">LMI</span>', T_GMI = '<span class="tag gmi">GMI</span>', T_DESC = '<span class="tag desc">descrittiva</span>';
+
+function buildForm(){
+  let h = "";
+  h += `<section class="card"><h2>Sezione I · Informazioni generali</h2><p class="sec-note">Profilazione: non entra negli indici, ma serve a leggere i risultati.</p>`;
+  h += q("1","1.","Nome azienda (facoltativo)",`<input type="text" class="wide" name="q1">`);
+  h += q("5","5.","Macro-settore economico",radio("q5",["Servizi (GDO, ospedali, hotel, logistica non produttiva, IT…)","Produzione / Manifatturiero"]));
+  h += q("6","6.","Tipologia di ciclo produttivo",radio("q6",["Ciclo produttivo completo","Ciclo parziale / lavorazioni specifiche"]),"","dep-prod");
+  h += q("7","7.","Tipologia di produzione predominante",radio("q7",["A reparti (Job Shop)","In linea / flusso continuo sincrono (Flow Shop)","Discontinua a lotti (con buffer intermedi)","A flusso tirato (Kanban / Pull)","Di processo continuo (24/7)","Altro"]),"","dep-prod");
+  h += q("8","8.","Dimensione aziendale (dipendenti)",radio("q8",["1 – 9","10 – 49","50 – 249","250 – 999","1000 e oltre"]));
+  h += q("10","10.","Elementi presenti in azienda",checks("q10",["ISO 9001","ISO 14001 / EMAS","ISO 50001","Energy Manager / EGE","Obbligo di diagnosi energetica (D.Lgs. 102/2014)"],"Nessuno dei precedenti / Non so"));
+  h += q("11","11.","Incidenza della spesa energetica sul fatturato",radio("q11",["Inferiore all’1%","Dall’1% al 3% escluso","Dal 3% al 5% escluso","Dal 5% al 10% escluso","Pari o superiore al 10%","Non so / Dato non disponibile"]));
+  h += `<p class="info">Le domande 2, 3, 4 e 9 (ATECO, descrizione, ruolo, fatturato) sono omesse: non influiscono sui calcoli.</p></section>`;
+
+  h += `<section class="card"><h2>Sezione II · Comportamenti organizzativi e strumenti Lean</h2><p class="sec-note">Le domande 13, 13B, 14, 15 e 16 formano il Lean Maturity Index.</p>`;
+  h += q("12","12.","L’azienda conosce e applica la filosofia Lean?",radio("q12",Q12,`<span class="skipnote">“No” → si salta alle domande 13 e 13B (1 pt ciascuna)</span>`),T_DESC);
+  let b = "";
+  BLOCKS.forEach(bl=>{
+    b += `<div class="block"><div class="bt">${esc(bl.t)}</div><div class="opts">`;
+    bl.items.forEach((it,i)=> b += `<label class="o"><input type="checkbox" name="q13${bl.id}" value="${i}"><span>${esc(it)}</span></label>`);
+    b += `<label class="o"><input type="checkbox" name="q13${bl.id}" value="altro"><span>Altro: <input type="text" name="q13${bl.id}txt" size="18" placeholder="specificare"></span></label>`;
+    b += `<label class="o excl"><input type="checkbox" name="q13${bl.id}" value="none" data-excl="1"><span>Nessuna delle precedenti / Non conosco queste metodologie</span></label></div></div>`;
+  });
+  h += q("13","13.","Tecniche e strumenti Lean utilizzati <span class=\"info\">(risposta multipla per blocco)</span>",b,T_LMI,"dep-lean");
+  h += q("13b","13B.","Livello di diffusione delle metodologie Lean",radio("q13b",Q13B),T_LMI,"dep-lean dep-tools");
+  h += q("14","14.","Gestione delle anomalie",radio("q14",Q14),T_LMI);
+  h += q("15","15.","Coinvolgimento e miglioramento: gestione delle proposte del personale operativo",radio("q15",Q15),T_LMI);
+  h += q("16","16.","Gestione visiva delle performance",radio("q16",Q16),T_LMI);
+  h += `</section>`;
+
+  h += `<section class="card"><h2>Sezione III · Vettori energetici e misurazione</h2><p class="sec-note">Nel GMI entrano solo Energia Elettrica e Gas Naturale; gli altri vettori sono descrittivi.</p>`;
+  let t = `<div class="tblwrap"><table class="grid"><thead><tr><th>Vettore</th>${LEVELS.map(l=>`<th class="c">${esc(l[1])}</th>`).join("")}</tr></thead><tbody>`;
+  VECTORS.forEach((v,i)=>{
+    t += `<tr><td>${esc(v)}${i<2?' <span class="tag gmi">GMI</span>':''}</td>${LEVELS.map(l=>`<td class="c"><input type="radio" name="q17_${i}" value="${l[0]}" aria-label="${esc(v)}: ${esc(l[1])}"></td>`).join("")}</tr>`;
+  });
+  t += `</tbody></table></div><p class="info">La colonna “Non so” è prevista dalla rev8 (nota per ENEA): vale 1 pt.</p>`;
+  h += q("17","17.","Vettori energetici utilizzati e livello di tracciamento",t,T_GMI);
+  h += `</section>`;
+
+  h += `<section class="card"><h2>Sezione IV · Pratiche integrate Lean &amp; Green</h2><p class="sec-note">Le domande 19 e 20 entrano nel Green Maturity Index; 18, 21 e 23 sono descrittive.</p>`;
+  h += q("18","18.","Aree con azioni di efficienza energetica in corso",checks("q18",["Processi produttivi / linee principali","Servizi ausiliari (compressori, caldaie, chiller…)","Logistica interna / movimentazione","Illuminazione generale / uffici","Climatizzazione ambienti (HVAC)"],"Nessuna area attualmente oggetto di interventi"),T_DESC);
+  h += q("19","19.","Pratiche operative regolarmente adottate per controllare i consumi",checks("q19",Q19,"Nessuna di queste pratiche è attualmente in uso"),T_GMI);
+  h += q("20","20.","Metodologie Lean applicate con obiettivo energetico",checks("q20",Q20,"Nessuna di queste metodologie è stata usata per scopi energetici"),T_GMI);
+  const sel = n => `<select name="${n}"><option value="">—</option>${[1,2,3,4,5].map(v=>`<option>${v}</option>`).join("")}<option value="ns">Non so</option></select>`;
+  let m = `<div class="tblwrap"><table><thead><tr><th>Spreco energetico tipico</th><th class="c">Impatto</th><th class="c">Sforzo</th></tr></thead><tbody>`;
+  WASTES.forEach((w,i)=> m += `<tr><td>${esc(w)}</td><td class="c">${sel("q21i_"+i)}</td><td class="c">${sel("q21s_"+i)}</td></tr>`);
+  m += `</tbody></table></div><p class="info">Scala 1 = basso/facile … 5 = alto/molto difficile.</p>`;
+  h += q("21","21.","Matrice Sforzo/Impatto degli sprechi energetici",m,T_DESC);
+  h += q("23","23.","Variazione del consumo specifico negli ultimi 3 anni",radio("q23",["Ridotto del 10% o più","Ridotto tra il 5% e il 10% escluso","Ridotto di meno del 5%","Sostanzialmente invariato","Aumentato","Non misurato / Non so"]),T_DESC);
+  h += `</section>`;
+  document.getElementById("form").innerHTML = h;
+}
+
+/* ============ Lettura delle risposte ============ */
+const F = () => document.getElementById("form");
+const val = name => { const e = F().querySelector(`input[name="${name}"]:checked`); return e ? e.value : null; };
+const vals = name => [...F().querySelectorAll(`input[name="${name}"]:checked`)].map(e=>e.value);
+const sval = name => { const e = F().querySelector(`select[name="${name}"]`); return e ? e.value : ""; };
+const fmt = x => x==null ? "–" : (Math.round(x*100)/100).toLocaleString("it-IT",{minimumFractionDigits:2,maximumFractionDigits:2});
+const fmt1 = x => (Math.round(x*100)/100).toLocaleString("it-IT",{maximumFractionDigits:2});
+const mean = a => a.reduce((s,x)=>s+x,0)/a.length;
+
+function compute(){
+  const r = {};
+  const q5 = val("q5"), q12 = val("q12");
+  r.isServ = q5==="0";
+  r.leanNo = q12==="4";
+  // --- D13: conteggio strumenti
+  r.blocks = BLOCKS.map(bl=>{
+    const v = vals("q13"+bl.id);
+    const n = v.filter(x=>x!=="none").length;
+    return {id:bl.id, n, touched:v.length>0, none:v.includes("none"), altro:v.includes("altro")};
+  });
+  r.q13answered = r.blocks.some(b=>b.touched);
+  r.nTools = r.blocks.reduce((s,b)=>s+b.n,0);
+  const toolPt = n => n<=2?1 : n<=5?2 : n<=8?3 : n<=11?4 : 5;
+  if (r.leanNo){ r.s13 = 1; r.s13why = "D12 = “No, non la conosciamo” → 1 pt d’ufficio"; }
+  else if (r.q13answered){ r.s13 = toolPt(r.nTools); r.s13why = `${r.nTools} strumenti → fascia ${r.nTools<=2?"0–2":r.nTools<=5?"3–5":r.nTools<=8?"6–8":r.nTools<=11?"9–11":"12 o più"}`; }
+  else { r.s13 = null; r.s13why = "non risposta"; }
+  // --- D13B
+  const v13b = val("q13b");
+  r.skip13b = r.leanNo || (r.q13answered && r.nTools===0);
+  if (r.leanNo){ r.s13b = 1; r.s13bwhy = "D12 = “No” → 1 pt d’ufficio"; r.prop13b=false; }
+  else if (r.q13answered && r.nTools===0){ r.s13b = 1; r.s13bwhy = "nessuno strumento alla D13 → domanda saltata, 1 pt"; r.prop13b=true; }
+  else if (v13b!==null){ r.s13b = Q13B[+v13b][1]; r.s13bwhy = "livello di diffusione scelto"; }
+  else { r.s13b = null; r.s13bwhy = "non risposta"; }
+  const c13 = [r.s13, r.s13b].filter(x=>x!=null);
+  r.c13 = c13.length ? mean(c13) : null;
+  // --- D14-16
+  const pick = (name, tab) => { const v = val(name); return v===null ? null : tab[+v][1]; };
+  r.s14 = pick("q14",Q14); r.s15 = pick("q15",Q15); r.s16 = pick("q16",Q16);
+  r.lmiParts = [["D13 (media 13 e 13B)", r.c13],["D14 Gestione anomalie", r.s14],["D15 Proposte di miglioramento", r.s15],["D16 Gestione visiva", r.s16]];
+  const lv = r.lmiParts.map(p=>p[1]).filter(x=>x!=null);
+  r.lmiN = lv.length; r.LMI = lv.length>=3 ? mean(lv) : null;
+  // --- D17
+  r.vec = [0,1].map(i=>{
+    const v = val("q17_"+i);
+    return {name:VECTORS[i], v, pt: v && v!=="nu" ? LEVEL_PT[v] : null,
+            label: v ? LEVELS.find(l=>l[0]===v)[1] : "non risposta"};
+  });
+  const pv = r.vec.map(x=>x.pt).filter(x=>x!=null);
+  r.s17 = pv.length ? mean(pv) : null;
+  r.otherVec = VECTORS.slice(2).map((n,j)=>({n, v: val("q17_"+(j+2))})).filter(x=>x.v && x.v!=="nu");
+  // --- D19 / D20
+  const cnt = name => { const v = vals(name); if(!v.length) return null; return v.includes("none") ? 0 : v.length; };
+  r.n19 = cnt("q19"); r.s19 = r.n19==null ? null : [1,2,3,4,5][r.n19];
+  r.n20 = cnt("q20"); r.s20 = r.n20==null ? null : (r.n20===0?1 : r.n20<=2?3 : 5);
+  r.gmiParts = [["D17 Tracciamento (media EE e gas)", r.s17],["D19 Pratiche operative", r.s19],["D20 Pratiche Lean per l’energia", r.s20]];
+  const gv = r.gmiParts.map(p=>p[1]).filter(x=>x!=null);
+  r.gmiN = gv.length; r.GMI = gv.length>=2 ? mean(gv) : null;
+  // --- Profilo
+  if (r.LMI!=null && r.GMI!=null){
+    r.minIdx = Math.min(r.LMI, r.GMI);
+    r.profile = PROFILES.find(p=>r.minIdx <= p.max + 1e-9);
+    r.diff = r.LMI - r.GMI;
+    r.imbalance = Math.abs(r.diff) >= 1.5 - 1e-9 ? (r.diff>0 ? "Lean senza energia" : "Energia senza Lean") : null;
+  }
+  // --- D21
+  r.wastes = WASTES.map((w,i)=>({w, i:sval("q21i_"+i), s:sval("q21s_"+i)})).filter(x=>x.i||x.s);
+  return r;
+}
+
+/* ============ Visibilità (logica di salto) ============ */
+function applySkips(r){
+  document.querySelectorAll(".dep-prod").forEach(e=>e.classList.toggle("hidden", r.isServ));
+  document.querySelectorAll(".dep-lean").forEach(e=>e.classList.toggle("hidden", r.leanNo));
+  document.getElementById("q13b").classList.toggle("hidden", r.leanNo || (r.q13answered && r.nTools===0));
+}
+
+/* ============ Rendering dei risultati ============ */
+function rowPt(label, pt, why, extra="", missLabel="mancante"){
+  return `<tr><td>${label}${extra}</td><td class="why">${why||""}</td><td class="pt">${pt==null?`<span class="miss">${missLabel}</span>`:fmt1(pt)+" pt"}</td></tr>`;
+}
+function bar(r){
+  const pos = x => ((x-1)/4*100).toFixed(1)+"%";
+  let h = `<div class="bar" role="img" aria-label="Posizione di LMI e GMI sulla scala 1–5">`;
+  [1,2,3.5,5].forEach(t=> h += `<span class="tick" style="left:${pos(t)}">${fmt1(t)}</span>`);
+  if (r.LMI!=null) h += `<span class="mk" style="left:${pos(r.LMI)};background:var(--lean)"><span class="lmi-c" style="top:-17px">LMI</span></span>`;
+  if (r.GMI!=null) h += `<span class="mk" style="left:${pos(r.GMI)};background:var(--green)"><span class="gmi-c">GMI</span></span>`;
+  return h + `</div>`;
+}
+function render(r){
+  let h = "";
+  // ---- LMI
+  h += `<div class="rcard"><h3><span>Lean Maturity Index</span><span class="big lmi-c ${r.LMI==null?'na':''}">${r.LMI==null?"non calcolabile":fmt(r.LMI)}</span></h3>`;
+  h += `<table class="calc"><tbody>`;
+  const tb = r.blocks.map(b=>`${b.id}:${b.n}`).join(" · ");
+  h += rowPt("D13 Strumenti", r.s13, r.leanNo ? r.s13why : (r.q13answered ? `${tb}<br>${r.s13why}` : r.s13why));
+  h += rowPt("D13B Diffusione", r.s13b, r.s13bwhy, r.prop13b?' <span class="badge prop">proposta</span>':"");
+  h += rowPt("→ D13 combinata", r.c13, r.c13==null?"":`media(${[r.s13,r.s13b].filter(x=>x!=null).map(fmt1).join(", ")})`);
+  h += rowPt("D14 Gestione anomalie", r.s14, "");
+  h += rowPt("D15 Proposte di miglioramento", r.s15, "");
+  h += rowPt("D16 Gestione visiva", r.s16, "");
+  h += `</tbody></table>`;
+  const lv = r.lmiParts.filter(p=>p[1]!=null);
+  h += `<div class="formula">LMI = media(${lv.map(p=>fmt1(p[1])).join(", ")||"–"}) ${r.LMI!=null?"= "+fmt(r.LMI):""}<br>risposte valide: ${r.lmiN}/4 (minimo 3)${r.LMI==null?" → indice non calcolabile":""}</div></div>`;
+
+  // ---- GMI
+  h += `<div class="rcard"><h3><span>Green Maturity Index</span><span class="big gmi-c ${r.GMI==null?'na':''}">${r.GMI==null?"non calcolabile":fmt(r.GMI)}</span></h3>`;
+  h += `<table class="calc"><tbody>`;
+  r.vec.forEach(v=> h += rowPt("D17 · "+v.name, v.pt, v.v==="nu" ? "non utilizzato" : v.label, "", v.v==="nu" ? "escluso" : "mancante"));
+  h += rowPt("→ D17 tracciamento", r.s17, r.s17==null ? "nessun vettore chiave valutabile" : `media(${r.vec.filter(v=>v.pt!=null).map(v=>fmt1(v.pt)).join(", ")})`);
+  h += rowPt("D19 Pratiche operative", r.s19, r.n19==null?"":`${r.n19} ${r.n19===1?"pratica":"pratiche"} su 4`);
+  h += rowPt("D20 Pratiche Lean per l’energia", r.s20, r.n20==null?"":`${r.n20} metodologie (0 → 1 · 1–2 → 3 · 3+ → 5)`);
+  h += `</tbody></table>`;
+  const gv = r.gmiParts.filter(p=>p[1]!=null);
+  h += `<div class="formula">GMI = media(${gv.map(p=>fmt1(p[1])).join(", ")||"–"}) ${r.GMI!=null?"= "+fmt(r.GMI):""}<br>risposte valide: ${r.gmiN}/3 (minimo 2)${r.GMI==null?" → indice non calcolabile":""}</div>`;
+  if (r.otherVec.length) h += `<p class="info">Altri vettori (solo descrittivi): ${r.otherVec.map(x=>`${esc(x.n)} ${x.v==="ns"?"Non so":x.v}`).join(" · ")}</p>`;
+  h += `</div>`;
+
+  // ---- Profilo
+  h += `<div class="rcard"><h3><span>Profilo restituito all’azienda</span></h3>`;
+  if (r.profile){
+    h += bar(r);
+    h += `<div class="formula">anello debole = min(LMI ${fmt(r.LMI)}, GMI ${fmt(r.GMI)}) = ${fmt(r.minIdx)}<br>differenza LMI − GMI = ${fmt(r.diff)} (soglia squilibrio ±1,50)</div>`;
+    h += `<div class="profile"><div class="pname">${esc(r.profile.name)}</div><div class="info">fascia ${esc(r.profile.range)}</div><p>${esc(r.profile.desc)}</p><p><b>Azione del modello:</b> ${esc(r.profile.act)}</p></div>`;
+    h += r.imbalance ? `<div class="flag">Segnalazione di squilibrio: “${r.imbalance}” (|differenza| ≥ 1,5)</div>`
+                     : `<div class="okflag">Indici in equilibrio (|differenza| &lt; 1,5): nessuna segnalazione.</div>`;
+  } else {
+    h += `<p class="miss">Il profilo richiede che LMI e GMI siano entrambi calcolabili.</p>`;
+  }
+  h += `</div>`;
+
+  // ---- D21
+  if (r.wastes.length){
+    const num = x => x && x!=="ns" ? +x : null;
+    const rows = r.wastes.map(x=>({...x, I:num(x.i), S:num(x.s)}))
+      .sort((a,b)=>((b.I??-1)-(a.I??-1)) || ((a.S??9)-(b.S??9)));
+    const cls = x => x.I==null||x.S==null ? "–" : x.I>=4&&x.S<=2 ? "Quick win" : x.I>=4 ? "Progetto strategico" : x.S<=2 ? "Intervento minore" : "Bassa priorità";
+    h += `<div class="rcard"><h3><span>D21 · Sprechi per priorità</span><span class="tag desc">descrittiva</span></h3><table class="calc"><thead><tr><th>Spreco</th><th>I</th><th>S</th><th>Lettura</th></tr></thead><tbody>`;
+    rows.forEach(x=> h += `<tr><td>${esc(x.w)}</td><td>${x.i==="ns"?"NS":x.i||"–"}</td><td>${x.s==="ns"?"NS":x.s||"–"}</td><td class="why">${cls(x)}</td></tr>`);
+    h += `</tbody></table><p class="legend-note">Ordinati per impatto decrescente e sforzo crescente. La lettura (quick win = impatto ≥ 4 e sforzo ≤ 2) è solo indicativa: la D21 non entra negli indici.</p></div>`;
+  }
+  document.getElementById("results").innerHTML = h;
+}
+
+function update(){
+  let r = compute(); applySkips(r); r = compute(); render(r);
+}
+
+/* ============ Interazioni ============ */
+function onChange(e){
+  const t = e.target;
+  if (t.type==="checkbox" && t.checked){
+    const group = F().querySelectorAll(`input[name="${t.name}"]`);
+    if (t.dataset.excl) group.forEach(x=>{ if(x!==t) x.checked=false; });
+    else group.forEach(x=>{ if(x.dataset.excl) x.checked=false; });
+  }
+  if (t.type==="text" && /^q13[A-E]txt$/.test(t.name)){
+    const box = F().querySelector(`input[name="${t.name.slice(0,4)}"][value="altro"]`);
+    if (box && t.value.trim()){ box.checked = true; F().querySelectorAll(`input[name="${t.name.slice(0,4)}"][data-excl]`).forEach(x=>x.checked=false); }
+  }
+  update();
+}
+
+/* ============ Esempi ============ */
+const PRESETS = {
+  matura: {q1:"Esempio: manifatturiera matura", q5:"1", q6:"0", q7:"1", q8:"3", q10:["0","1","2","3","4"], q11:"3", q12:"2",
+    q13:{A:["0","1","2","3"],B:["0","1","2","4","5"],C:["0","2","3"],D:["0","1","3","4"],E:["0","1","2"]}, q13b:"4", q14:"4", q15:"4", q16:"2",
+    q17:{0:"L3",1:"L2",6:"L2",7:"L1"}, q18:["0","1","3"], q19:["0","1","2","3"], q20:["0","1","2"],
+    q21:{0:[4,1],1:[5,2],2:[3,4],5:[4,3]}, q23:"0"},
+  squilibrio: {q1:"Esempio: Lean senza energia", q5:"1", q6:"1", q7:"3", q8:"2", q10:["0"], q11:"1", q12:"1",
+    q13:{A:["0","1","3"],B:["0","4"],C:["0","3"],D:["0","3","4"],E:["0"]}, q13b:"3", q14:"3", q15:"3", q16:"2",
+    q17:{0:"L1",1:"L0"}, q18:["4"], q19:["1"], q20:["none"], q21:{0:[3,1],1:["ns","ns"]}, q23:"5"},
+  servizi: {q1:"Esempio: servizi, Lean non nota", q5:"0", q8:"1", q10:["none"], q11:"0", q12:"4",
+    q14:"0", q15:"0", q16:"0", q17:{0:"L1",1:"nu",3:"nu"}, q19:["0"], q20:["none"], q23:"3"},
+  incompleta: {q1:"Esempio: risposte incomplete", q5:"1", q12:"0",
+    q13:{A:["0"],B:["none"],C:["none"],D:["none"],E:["none"]}, q16:"1", q17:{0:"ns"}, q23:"5"}
+};
+function resetForm(){ F().reset(); update(); }
+function applyPreset(p){
+  F().reset();
+  const setR = (n,v)=>{ const e = F().querySelector(`input[name="${n}"][value="${v}"]`); if(e) e.checked = true; };
+  for (const [k,v] of Object.entries(p)){
+    if (k==="q1") F().querySelector('input[name="q1"]').value = v;
+    else if (k==="q13") Object.entries(v).forEach(([b,arr])=>arr.forEach(x=>setR("q13"+b,x)));
+    else if (k==="q17") Object.entries(v).forEach(([i,l])=>setR("q17_"+i,l));
+    else if (k==="q21") Object.entries(v).forEach(([i,[a,b]])=>{ F().querySelector(`select[name="q21i_${i}"]`).value=String(a); F().querySelector(`select[name="q21s_${i}"]`).value=String(b); });
+    else if (Array.isArray(v)) v.forEach(x=>setR(k,x));
+    else setR(k,v);
+  }
+  update();
+  if (window.matchMedia("(max-width:960px)").matches) document.getElementById("results").scrollIntoView({behavior:"smooth"});
+}
+
+buildForm();
+F().addEventListener("change", onChange);
+F().addEventListener("input", e=>{ if(e.target.type==="text") onChange(e); });
+document.getElementById("reset").addEventListener("click", resetForm);
+document.querySelectorAll("[data-preset]").forEach(b=>b.addEventListener("click",()=>applyPreset(PRESETS[b.dataset.preset])));
+update();
+</script>
+</body>
+</html>
