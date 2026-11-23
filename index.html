@@ -89,7 +89,7 @@ table.calc tr.sum td{border-top:2px solid var(--line);border-bottom:0;font-weigh
 .profile .pname{font-weight:700;font-size:16px}
 .flag{margin-top:10px;padding:8px 10px;border-radius:8px;background:var(--warn-soft);color:var(--warn);font-weight:600;font-size:13.5px}
 .okflag{margin-top:10px;padding:8px 10px;border-radius:8px;background:var(--accent-soft);color:var(--accent);font-size:13.5px}
-.bar{position:relative;height:10px;border-radius:5px;background:linear-gradient(90deg,var(--bad-soft) 0 25%,var(--warn-soft) 25% 62.5%,var(--accent-soft) 62.5% 100%);margin:16px 0 22px}
+.bar{position:relative;height:10px;border-radius:5px;background:linear-gradient(90deg,var(--bad-soft) 0 25%,var(--warn-soft) 25% 62.5%,var(--accent-soft) 62.5% 100%);margin:18px 0 38px}
 .bar .mk{position:absolute;top:-5px;width:4px;height:20px;border-radius:2px;transform:translateX(-2px)}
 .bar .mk span{position:absolute;top:21px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:700;white-space:nowrap}
 .bar .tick{position:absolute;top:12px;font-size:10.5px;color:var(--muted);transform:translateX(-50%)}
@@ -306,7 +306,7 @@ function bar(r){
   let h = `<div class="bar" role="img" aria-label="Posizione di LMI e GMI sulla scala 1–5">`;
   [1,2,3.5,5].forEach(t=> h += `<span class="tick" style="left:${pos(t)}">${fmt1(t)}</span>`);
   if (r.LMI!=null) h += `<span class="mk" style="left:${pos(r.LMI)};background:var(--lean)"><span class="lmi-c" style="top:-17px">LMI</span></span>`;
-  if (r.GMI!=null) h += `<span class="mk" style="left:${pos(r.GMI)};background:var(--green)"><span class="gmi-c">GMI</span></span>`;
+  if (r.GMI!=null) h += `<span class="mk" style="left:${pos(r.GMI)};background:var(--green)"><span class="gmi-c" style="top:33px">GMI</span></span>`;
   return h + `</div>`;
 }
 function render(r){
